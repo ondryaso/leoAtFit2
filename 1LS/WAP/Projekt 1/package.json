@@ -1,0 +1,18 @@
+{
+  "name": "wap-1",
+  "version": "1.0.0",
+  "description": "WAP project",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "jasmine",
+    "docs": "jsdoc -c jsdoc.conf.json -d docs"
+  },
+  "author": "Ondřej Ondryáš",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^18.14.0",
+    "jasmine": "^4.5.0",
+    "jsdoc": "^4.0.2"
+  }
+}

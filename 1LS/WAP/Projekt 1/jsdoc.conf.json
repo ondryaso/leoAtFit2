@@ -1,0 +1,11 @@
+{
+    "source": {
+        "include": [ "README.md", "iterate.mjs", "iterate_alternative.mjs", "performance_tests.js", "spec/iterateSpec.js" ],
+        "includePattern": ".+\\.(m?js(doc|x)?)$"
+    },
+    "sourceType": "module",
+    "plugins": ["plugins/markdown"],
+    "templates": {
+        "cleverLinks": true
+    }
+}

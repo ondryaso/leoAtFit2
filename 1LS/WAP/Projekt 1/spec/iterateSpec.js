@@ -1,0 +1,444 @@
+/**
+ * @file Provides {@link jasmine} tests for {@link module:iterate}.
+ * @author Ondřej Ondryáš <xondry02@stud.fit.vut.cz>
+ */
+
+import { iterateProperties } from "../iterate.mjs";
+
+
+const customMatchers = {
+    /**
+     * A factory for a jasmine matcher that expects a passed iterator to yield exactly or at least the expected string items.
+     */
+    toYieldStrings(matchersUtil) {
+        return {
+            compare: function (/** @type {Iterable<string>} */ actual, /** @type {string[]} */ expected, exactly = false) {
+                // Create a 'dictionary' of expected strings to number of expected occurrences.
+                // The algorithm decreases this number every time the value is encountered. Then, if all values == 0,
+                // they have been found.
+                let expectedFound = {};
+                for (let expectedStr of expected) {
+                    if (expectedStr in expectedFound) {
+                        expectedFound[expectedStr]++;
+                    } else {
+                        expectedFound[expectedStr] = 1;
+                    }
+                }
+
+                let found = [];
+                let missing = [];
+
+                for (let x of actual) {
+                    // Don't let it go below zero. This way the else if would be triggered in 'exactly' mode
+                    // if the value was found more times than it should've been.
+                    if (x in expectedFound && expectedFound[x] > 0) {
+                        expectedFound[x]--;
+                        // if the value is not expected and we're in 'exactly' mode, fail
+                    } else if (exactly) {
+                        return {
+                            pass: false,
+                            message: `Expected iterable to yield exactly ${matchersUtil.pp(expected)}, encountered ${matchersUtil.pp(x)}.`
+                        }
+                    }
+
+                    found.push(x);
+                }
+
+                // all values in the dictionary with their 'expected' number should now be == 0
+                // if any of them isn't, add it to the missing array, possibly multiple times if more occurences were requested
+                for (let x in expectedFound) {
+                    if (expectedFound[x] > 0)
+                        for (let missingNum = 0; missingNum < expectedFound[x]; missingNum++)
+                            missing.push(x);
+                }
+
+                if (missing.length === 0) {
+                    return { pass: true };
+                } else {
+                    return {
+                        pass: false,
+                        message: `Expected iterable to yield ${exactly ? 'exactly' : 'at least'} ${matchersUtil.pp(expected)}, got ${matchersUtil.pp(found)}, missing ${matchersUtil.pp(missing)}.`
+                    };
+                }
+            }
+        };
+    },
+
+    /**
+     * A factory for a jasmine matcher that expects a passed iterator to yield a given object a given number of times
+     * (one by default).
+     */
+    toYield(matchersUtil) {
+        return {
+            compare: function (actual, expected, times = 1, exactly = true) {
+                let left = times;
+
+                for (let x of actual) {
+                    if (matchersUtil.equals(x, expected)) left--;
+                    if (!exactly && left === 0) return { pass: true };
+                }
+
+                if (exactly && left === 0) return { pass: true };
+
+                return {
+                    pass: false,
+                    message: times === 1 ? `Expected iterable to yield ${matchersUtil.pp(expected)} ${exactly ? 'exactly' : 'at least'} once, got ${times - left} occurence(s).`
+                        : `Expected iterable to yield ${matchersUtil.pp(expected)} ${exactly ? 'exactly' : 'at least'} ${times} times, got ${times - left} occurence(s).`
+                };
+            }
+        };
+    },
+
+    /**
+     * A factory for a jasmine matcher that expects a passed iterator to only yield a single given value and then end.
+     */
+    toYieldJust(matchersUtil) {
+        return {
+            compare: function (actual, expected) {
+                let val = actual.next().value;
+                if (!matchersUtil.equals(val, expected))
+                    return { pass: false, message: `Expected ${matchersUtil.pp(expected)}, got ${matchersUtil.pp(val)}.` };
+
+                let nextVal = actual.next();
+                if (!nextVal.done)
+                    return { pass: false, message: `Expected end of iterable, got ${matchersUtil.pp(nextVal.value)}.` };
+
+                return { pass: true };
+            }
+        }
+    },
+
+    /**
+     * A factory for a jasmine matcher that expects a passed iterator to yield an actual value when next() is triggered.
+     */
+    toYieldOne(matchersUtil) {
+        return {
+            compare: function (actual, expected) {
+                let val = actual.next().value;
+                if (!matchersUtil.equals(val, expected))
+                    return { pass: false, message: `Expected ${matchersUtil.pp(expected)}, got ${matchersUtil.pp(val)}.` };
+
+                return { pass: true };
+            }
+        }
+    }
+};
+
+describe('IterateProperties', () => {
+    beforeEach(function () {
+        jasmine.addMatchers(customMatchers);
+    });
+
+    it("yields a single property", () => {
+        let o = { a: "value" };
+
+        let itr = iterateProperties(o);
+        expect(itr.next().value).toBe("a");
+    });
+
+    it("yields all properties", () => {
+        let o = {
+            a: 1,
+            b: 2,
+            c: 3
+        };
+
+        let itr = iterateProperties(o);
+        expect(itr).toYieldStrings(["a", "b", "c"]);
+    });
+
+    it("yields Symbol names as strings", () => {
+        let o = {
+            [Symbol("a")]: 1,
+            [Symbol("a")]: 2,
+            [Symbol("b")]: 3,
+            [Symbol.for("c")]: 4
+        };
+
+        let itr = Array.from(iterateProperties(o));
+        expect(itr.filter(val => val === "Symbol(a)").length).toBe(2);
+        expect(itr).toContain("Symbol(b)");
+        expect(itr).toContain("Symbol(c)");
+    });
+
+    it("yields both property names and Symbols", () => {
+        let o = {
+            a: 1,
+            [Symbol("b")]: 2,
+            "c": 3,
+            [Symbol.for("d")]: 4
+        };
+
+        let itr = iterateProperties(o);
+        expect(itr).toYieldStrings(["a", "Symbol(b)", "c", "Symbol(d)"]);
+    });
+
+    describe("yields properties of prototype", () => {
+        it("when not shadowed", () => {
+            let o1 = { a: 1 };
+
+            let o2 = { b: 2 };
+
+            Object.setPrototypeOf(o2, o1);
+            let itr = iterateProperties(o2);
+            expect(itr).toYield("a");
+        });
+
+        it("when shadowed", () => {
+            let o1 = { a: 1 };
+            let o2 = { a: 2 };
+
+            Object.setPrototypeOf(o2, o1);
+            let itr = iterateProperties(o2);
+            expect(itr).toYield("a", 2);
+        });
+    });
+
+    it("yields shadowed properties multiple times", () => {
+        let o1 = { a: 1 };
+        let o2 = { a: 2 };
+
+        Object.setPrototypeOf(o2, o1);
+        let itr = iterateProperties(o2);
+        expect(itr).toYield("a", 2);
+    });
+
+    it("yields Symbol-keyed properties with same string names multiple times", () => {
+        let o1 = { [Symbol("a")]: 1 };
+        let o2 = { [Symbol("a")]: 2 };
+
+        Object.setPrototypeOf(o2, o1);
+        let itr = iterateProperties(o2);
+        expect(itr).toYield("Symbol(a)", 2);
+    });
+
+    it("yields Symbol-keyed shadowed properties multiple times", () => {
+        let o1 = { [Symbol.for("a")]: 1 };
+        let o2 = { [Symbol.for("a")]: 2 };
+
+        Object.setPrototypeOf(o2, o1);
+        let itr = iterateProperties(o2);
+        expect(itr).toYield("Symbol(a)", 2);
+    });
+
+    it("filters shadowed properties", () => {
+        let o1 = { a: 1 };
+
+        let o2 = { a: 2 };
+
+        Object.setPrototypeOf(o2, o1);
+        let itr = iterateProperties(o2, { value: 1 });
+        expect(itr).toYield("a", 1);
+    });
+
+    it("follows the prototype chain", () => {
+        let o1 = { a: 1 };
+        let o2 = { b: 2 };
+        let o3 = { c: 3 };
+
+        Object.setPrototypeOf(o2, o1);
+        Object.setPrototypeOf(o3, o2);
+
+        let itr = iterateProperties(o3);
+        expect(itr).toYieldStrings(["a", "b", "c"]);
+    });
+
+    describe("filters by", () => {
+        let x = {};
+        let o = {
+            a: 1,
+            b: "2",
+            c: x
+        };
+
+        Object.defineProperty(o, "d", {
+            configurable: false,
+            enumerable: true,
+            writable: true
+        });
+
+        Object.defineProperty(o, "e", {
+            writable: false,
+            enumerable: true,
+            configurable: true
+        });
+
+        Object.defineProperty(o, "f", {
+            enumerable: false,
+            writable: true,
+            configurable: true
+        });
+
+
+        Object.defineProperty(o, "g", {
+            enumerable: false,
+            writable: true,
+            configurable: true
+        });
+
+        Object.setPrototypeOf(o, null);
+
+        it("atomic value", () => {
+            let itr = iterateProperties(o, { value: 1 });
+            expect(itr).toYieldJust("a");
+
+            itr = iterateProperties(o, { value: "2" });
+            expect(itr).toYieldJust("b");
+        });
+
+        it("object value", () => {
+            let itr = iterateProperties(o, { value: x });
+            expect(itr).toYieldJust("c");
+        });
+
+        it("configurable", () => {
+            let itr = iterateProperties(o, { configurable: false });
+            expect(itr).toYieldJust("d");
+        });
+
+        it("writable", () => {
+            let itr = iterateProperties(o, { writable: false });
+            expect(itr).toYieldJust("e");
+        });
+
+        it("enumerable", () => {
+            let vals = Array.from(iterateProperties(o, { enumerable: false }));
+            expect(vals).toContain("f");
+            expect(vals).toContain("g");
+            expect(vals.length).toBe(2);
+        });
+    });
+
+    it("filters by multiple filter properties", () => {
+        let o = {};
+        Object.defineProperties(o, {
+            a: { value: 1, enumerable: true, configurable: false },
+            b: { value: 1, enumerable: true, configurable: false },
+            c: { value: 1, enumerable: false, configurable: false },
+            d: { value: 2, enumerable: false, configurable: true }
+        });
+        Object.setPrototypeOf(o, null);
+
+        let itr = Array.from(iterateProperties(o, { value: 1, enumerable: true })).sort();
+        expect(itr).toEqual(["a", "b"]);
+
+        itr = Array.from(iterateProperties(o, { value: 1, enumerable: false }));
+        expect(itr).toEqual(["c"]);
+
+        itr = Array.from(iterateProperties(o, { value: 1 })).sort();
+        expect(itr).toEqual(["a", "b", "c"]);
+
+        itr = Array.from(iterateProperties(o, { enumerable: false, configurable: false }));
+        expect(itr).toEqual(["c"]);
+
+        itr = Array.from(iterateProperties(o, { enumerable: false, configurable: true }));
+        expect(itr).toEqual(["d"]);
+    });
+
+    it("differentiates between undefined 'value' filter property and undefined value", () => {
+        let o = { a: undefined, b: "abc" };
+        Object.setPrototypeOf(o, null);
+        let itr1 = iterateProperties(o, { value: undefined });
+        let itr2 = iterateProperties(o, {});
+
+        expect(itr1).toYieldJust("a");
+        expect(itr2).toYieldStrings(["a", "b"], true);
+    });
+
+    it("filters symbol-keyed properties", () => {
+        let o = {
+            [Symbol("a")]: 1,
+            [Symbol("b")]: 2,
+            [Symbol("c")]: 1,
+            [Symbol("b")]: 1,
+            [Symbol("b")]: 1,
+            [Symbol("d")]: 3
+        };
+
+        let itr = iterateProperties(o, { value: 1 });
+        expect(itr).toYieldStrings(["Symbol(a)", "Symbol(b)", "Symbol(b)", "Symbol(c)"], true);
+    });
+
+    describe("can be used multiple times independently", () => {
+        it("on different objects", () => {
+            // THIS TEST IS NOT (FORMALLY) RIGHT.
+            // The spec doesn't require any specific ordering of the yielded values.
+            // However, the test expects them to be returned "in order of definition"
+            // (which is, frankly, the way it works).
+
+            let o1 = { a: 1, b: 2, c: 3 };
+            let o2 = { x: 9, y: 8, z: 7 };
+
+            Object.setPrototypeOf(o1, null);
+            Object.setPrototypeOf(o2, null);
+
+            let itr1 = iterateProperties(o1);
+            let itr2 = iterateProperties(o2);
+
+            expect(itr1).toYieldOne("a");
+            expect(itr2).toYieldOne("x");
+            expect(itr1).toYieldOne("b");
+            expect(itr1).toYieldOne("c");
+            expect(itr2).toYieldOne("y");
+            expect(itr1.next().done).toBeTrue();
+            expect(itr2.next().done).toBeFalse();
+            expect(itr2.next().done).toBeTrue();
+        });
+
+        it("on the same object", () => {
+            let o = { a: 1, b: 2, c: 3 };
+            Object.setPrototypeOf(o, null);
+
+            let itr1 = iterateProperties(o);
+            let itr2 = iterateProperties(o);
+
+            expect(itr1).toYieldOne("a");
+            expect(itr2).toYieldOne("a");
+            expect(itr1).toYieldOne("b");
+            expect(itr1).toYieldOne("c");
+            expect(itr2).toYieldOne("b");
+            expect(itr1.next().done).toBeTrue();
+            expect(itr2.next().done).toBeFalse();
+            expect(itr2.next().done).toBeTrue();
+        });
+    });
+
+    it("works correctly on constructed objects", () => {
+        function SomeObj(a, b, c) {
+            this.a = a;
+            this.b = b;
+            this.c = c;
+            this.d = 123;
+        }
+
+        SomeObj.prototype = {
+            a: 10,
+            x: undefined,
+            y: 5
+        }
+
+        let oi = new SomeObj(1, 2, 3);
+        let itr = iterateProperties(oi, { enumerable: true });
+        expect(itr).toYieldStrings(["a", "b", "c", "d", "a", "x", "y"], true);
+    });
+
+    it("works correctly on objects constructed from classes", () => {
+        class SomeObj {
+            a = 0;
+            b = 0;
+            #c = 0;
+            constructor(x, y, z) {
+                this.a = x;
+                this.b = y;
+                this.#c = z;
+                this.d = 123;
+            }
+        }
+
+        let oi = new SomeObj(1, 2, 3);
+        let itr1 = iterateProperties(oi, { enumerable: true });
+        expect(itr1).toYieldStrings(["a", "b", "d"], true);
+        let itr2 = iterateProperties(oi, { enumerable: false });
+        expect(itr2).not.toYield("#c", 1, false);
+    });
+});

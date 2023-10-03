@@ -1,0 +1,106 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[familydefault,light]{Chivo}
+\usepackage[a4paper, top=2.5cm, inner=2.5cm, outer=2.5cm, bottom=2.5cm]{geometry}
+\usepackage[english, czech]{babel}
+\usepackage{csquotes}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{textcomp}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{svg}
+\usepackage[normalem]{ulem}
+\usepackage{appendix}
+\usepackage[nopatch=item]{microtype}
+\usepackage{array}
+\usepackage{float}
+\usepackage[inline]{enumitem}
+\usepackage[ruled, czech]{algorithm2e}
+\usepackage{longtable}
+
+\renewcommand{\appendixpagename}{Přílohy}
+\renewcommand{\appendixtocname}{Přílohy}
+\definecolor{LC}{rgb}{0.88,1,1}
+\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
+
+\usepackage[unicode,pdfauthor={O. Ondryáš, F. Stupka},pdftitle={GAL projekt: Maximální nezávislá množina},hidelinks,colorlinks]{hyperref}
+\hypersetup{
+    urlcolor=cyan,
+    linkcolor=black
+}
+
+\usepackage[backend=biber,style=iso-numeric,autolang=other,sortlocale=cs,bibencoding=UTF8,block=ragged]{biblatex}
+\addbibresource{literature.bib}
+
+\usepackage{parskip}
+
+\begin{document}
+
+\begin{center}
+\Huge
+Afinitní šifra
+
+\LARGE
+Kryptografie -- projekt 1
+\end{center}
+
+\vspace{1cm}
+
+{\Large
+Bc. Ondřej Ondryáš\hfill\today
+}
+
+\vspace{1.5cm}
+
+\section{Implementace šifry}
+
+Šifrování a~dešifrování s~klíčem je implementováno ve třídě \texttt{Crypto}. Objekt \texttt{Crypto} si před prvním (de)šifrováním předpočítá a~do paměti uloží celou substituční tabulku pro požadovanou část ASCII, nepodporované znaky jsou v~mapování vyplěny mezerami. Výpočet samotný je triviální. Vzhledem k~tomu, že se využívají pouze multiplikativní inverze modulo 26, byly předpočítány a~uloženy do tabulky. Při výpočtech s~modulární aritmetikou jazyka C++ je nutné kompenzovat záporné výsledky přičtením 26.
+
+\section{Frekvenční analýza}
+
+Nejprve jsem se pokusil šifru prolomit s~využitím korelace nad frekvencemi znaků. Výsledky tohoto přístupu však byly značně neuspokojivé. Dále jsem vyzkoušel útok založený na nacházení nejčastějších českých slov, který měl na použitých vstupních datech naopak stoprocentní úspěšnost. Vzhledem k~tomu, že tento přístup už spíš není možné považovat za frekvenční analýzu, dále jsem vyzkoušel variaci útoku popsaného v~\cite{chr:affine}, který odhaduje klíče řešením soustavy kongruenčních rovnic. Jeho nad testovacími daty byla asi 94\%, což považuji za úspěšné. Ve finálním řešení je využita kombinace obou přístupů.
+
+\subsection{Korelační analýza}
+
+Považujme jednotlivé frekvence znaků v~původním textu za realizace náhodné proměnné $X$, frekvence v~zašifrovaném textu za realizace n. p. $X'$ a~frekvence znaků abecedy v~jazyce původní zprávy za realizace náhodné proměnné $Y$. Předpokladem je, že mezi $X$ a~$Y$ očekáváme vysokou korelaci. Šifrování zprávy klíčem $k$ můžeme považovat za jistou transformaci $X \rightarrow_{k} X'$. Provedeme-li tutéž transformaci nad $Y$, tedy stejným klíčem $k$ zašifrujeme abecedu: $Y \rightarrow_{k} Y'$, bude korelace $X'$ a~$Y'$ shodná.
+
+Obrázek \ref{fig:korelacni} ukazuje frekvence písmen v~přiřazené zašifrované zprávě a~průměrné frekvence písmen v~českých textech po provedení substituce jednotlivých znaků podle klíče zprávy (a=25, b=7). Je zřejmé, že v tomto případě je shoda vcelku vysoká.
+
+\begin{figure}[ht]
+    \centering
+    \includesvg[width=0.7\textwidth]{encr_text.svg}
+    
+    \vspace{\baselineskip}
+
+    \includesvg[width=0.7\textwidth]{encr_alph.svg}
+
+    \caption{Frekvence písmen ve vzorovém zašifrovaném textu (n=2029) a~průměrná frekvence písmen v~českém jazyce po substituci písmen stejným klíčem. Zdroj: \cite{matweb:frekv}.}
+    \label{fig:korelacni}
+\end{figure}
+
+Algoritmus prochází všech 312 kombinací klíčů $a$, $b$, pro každou vytvoří substituční tabulku a~následně spočítá korelační koeficient mezi frekvencemi písmen zprávy a~frekvencemi přemapovaných znaků z~abecedy. Výstupem je klíč, pro který byla korelace nejvyšší.
+
+Pro první testovací zprávu měl algoritmus velice dobrý výsledek: hodnota korelačního koeficientu je zde pro správný klíč maximální, $r = $ 0,991. Ukázalo se ale, že pro další testovací zprávy 
+
+\subsection{Výpočet pravděpodobných klíčů}
+
+..
+
+\subsection{Hledání slov}
+
+..
+
+\clearpage
+\section*{Reference}
+\printbibliography[heading=none]
+
+\clearpage
+\appendix
+\appendixpage
+
+\section{Algoritmus BMA}
+asdds
+
+\end{document}

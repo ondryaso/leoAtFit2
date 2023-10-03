@@ -1,0 +1,2 @@
+bencoder.pyx==3.0.1
+scapy==2.5.0

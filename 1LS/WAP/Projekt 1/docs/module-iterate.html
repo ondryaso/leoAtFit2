@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Module: iterate</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Module: iterate</h1>
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description"><p>Provides an <code>iterateProperties</code> generator that yields names of properties
+in a given object and its prototype chain.</p></div>
+        
+
+        
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-author">Author:</dt>
+    <dd class="tag-author">
+        <ul>
+            <li>Ondřej Ondryáš &lt;xondry02@stud.fit.vut.cz></li>
+        </ul>
+    </dd>
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="iterate.mjs.html">iterate.mjs</a>, <a href="iterate.mjs.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id=".iterateProperties"><span class="type-signature">(static) </span>iterateProperties<span class="signature">(inObj, filterDescriptor<span class="signature-attributes">nullable</span>)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Returns a generator that yields names of properties in a given object and its prototype chain.
+For properties identified by a <code>Symbol</code>, the string representation of the identifier is yielded.</p>
+<p>If <code>filterDescriptor</code> is provided, its defined properties are used as filters that control
+which properties are returned. Their values are matched against the corresponding values in each property
+descriptor in the target object chain.</p>
+<p>The generator doesn't guarantee any particular order of the returned properties.
+In this implementation, the names are yielded in order of <code>Reflect.ownKeys</code>, starting with the provided
+source object and going up its prototype chain.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>inObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The object to iterate properties of.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>filterDescriptor</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">PropertyDescriptor</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                    &lt;nullable><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>A descriptor-like object that specify values to filter by.
+Only the <code>configurable</code>, <code>enumerable</code>, <code>value</code> and <code>writable</code> properties are used as filters (if defined).
+Any other properties are ignored. If undefined or null, no filtering is performed.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="iterate.mjs.html">iterate.mjs</a>, <a href="iterate.mjs.html#line41">line 41</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>A generator that yields string property names.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Generator.&lt;string, any, unknown></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+<h5>Yields:</h5>
+
+        
+<div class="param-desc">
+    The next property name.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>// Returns an iterable of "a", "constructor", "__defineGetter__", etc.
+// (all properties from Object.prototype are included as well)
+iterateProperties({ a: "val" })</code></pre>
+
+    <pre class="prettyprint"><code>// Returns an iterable of "a", "c"
+iterateProperties({ a: "val", b: "val2", c: "val" }, { value: "val" })</code></pre>
+
+    <pre class="prettyprint"><code>// Returns "a", "b"
+iterateProperties({ a: undefined, b: null })
+// Returns "a"
+iterateProperties({ a: undefined, b: null }, { value: undefined })</code></pre>
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="~matchesDescriptor"><span class="type-signature">(inner) </span>matchesDescriptor<span class="signature">(target, filter)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Determines whether a provided property descriptor matches a filter.
+A descriptor matches a filter if values of all the defined fields of the filter equal
+the values in the source descriptor. Undefined fields in the filter are ignored.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>target</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">PropertyDescriptor</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The property descriptor to match.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>filter</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">PropertyDescriptor</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The filter property descriptor to match against.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="iterate.mjs.html">iterate.mjs</a>, <a href="iterate.mjs.html#line67">line 67</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-iterate.html">iterate</a></li><li><a href="module-iterate_alternative.html">iterate_alternative</a></li></ul><h3>Namespaces</h3><ul><li><a href="performanceTests.html">performanceTests</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Wed Mar 01 2023 21:55:29 GMT+0100 (Středoevropský standardní čas)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

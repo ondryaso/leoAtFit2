@@ -1,0 +1,229 @@
+/**
+ * @file Tests various implementations of the {@link module:iterate.iterateProperties}
+ * generator and measures their running time.
+ * 
+ * @author Ondřej Ondryáš <xondry02@stud.fit.vut.cz>
+ * @see {@link module:iterate} The baseline implementation.
+ * @see {@link module:iterate_alternative} The alternative implementations.
+ */
+
+'use strict';
+import * as Impls from "./iterate_alternative.mjs";
+
+/**
+ * Generates very long object chains of objects with large number of random properties, 
+ * runs the implementations and measures the time they take, then compares whether the 
+ * results are the same.
+ * 
+ * Before comparing the results, the generated values are collected in arrays and sorted
+ * This is done to ignore differences in the order of returned names (as no particular
+ * ordering of the names yielded by the generator is required by the specification).
+ * 
+ * The number of properties and objects in a chain may be controlled by changing the 
+ * {@link numProperties} and {@link numObjectsInChain} constants.
+ * @namespace performanceTests
+ */
+function performanceTests() {
+    /**
+     * A seeding value used to intitialize the pseudorandom number generator
+     * used to generate random property names and values. This is intentionally 
+     * set to a constant value so the tests behave similarly between runs.
+     */
+    const seed = 'this is a seed used to initialize the PRNG';
+
+    /**
+     * The number of properties to randomly generate in each object.
+     */
+    const numProperties = 10000;
+
+    /**
+     * The number of objects in the generated prototype chain.
+     */
+    const numObjectsInChain = 100;
+
+    /**
+     * A buffer used to store values generated in {@link cyrb128}.
+     * @private 
+     */
+    const hashBuffer = Buffer.alloc(16);
+
+    cyrb128(seed);
+    let rng = sfc32();
+
+    /**
+     * Outputs the time elapsed since the given start point.
+     * @param {*} start The start of measurement, as returned by {@link process.hrtime}.
+     * @param {string} note A note to prepend to the printed measurement.
+     */
+    function elapsedTime(start, note) {
+        let elapsed = process.hrtime(start);
+        let elapsedMs = elapsed[0] * 1000 + elapsed[1] / 1000000; // ns -> ms
+        console.log(`${note}: ${elapsedMs.toFixed(3)} ms`);
+    }
+
+    /**
+     * Implements a simple hashing function that computes 128-bit hashes.
+     * Probably not super robust but good enough to seed a PRNG.
+     * The computed hash is stored in {@link hashBuffer}.
+     * @param {string} str A string to hash. 
+     * @see {@link https://stackoverflow.com/a/47593316 Source: StackOverflow}
+     */
+    function cyrb128(str) {
+        let h1 = 1779033703, h2 = 3144134277,
+            h3 = 1013904242, h4 = 2773480762;
+
+        for (let i = 0, k; i < str.length; i++) {
+            k = str.charCodeAt(i);
+            h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
+            h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+            h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
+            h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
+        }
+
+        h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
+        h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
+        h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
+        h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
+
+        hashBuffer.writeUInt32LE((h1 ^ h2 ^ h3 ^ h4) >>> 0, 0);
+        hashBuffer.writeUInt32LE((h2 ^ h1) >>> 0, 4);
+        hashBuffer.writeUInt32LE((h3 ^ h1) >>> 0, 8);
+        hashBuffer.writeUInt32LE((h4 ^ h1) >>> 0, 12);
+    }
+
+    /**
+     * Creates a simple pseudorandom number generator (PRNG) seeded by the current 
+     * contents of {@link hashBuffer}.
+     * @returns A function that, when called, generates the next pseudorandom value.
+     * @see {@link https://stackoverflow.com/a/47593316 Source: StackOverflow} 
+    */
+    function sfc32() {
+        let a = hashBuffer.readUInt32LE(0),
+            b = hashBuffer.readUInt32LE(4),
+            c = hashBuffer.readUInt32LE(8),
+            d = hashBuffer.readUInt32LE(12);
+
+        return function () {
+            a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0;
+            var t = (a + b) | 0;
+            a = b ^ b >>> 9;
+            b = c + (c << 3) | 0;
+            c = (c << 21 | c >>> 11);
+            d = d + 1 | 0;
+            t = t + d | 0;
+            c = c + t | 0;
+            return (t >>> 0) / 4294967296;
+        }
+    }
+
+    /**
+     * Generates a random string.
+     * The generated string is a base64-encoded pseudorandom number.
+     * @param {function(): number} rng A random number generator function.
+     * @returns A random string.
+     */
+    function makeRandomString(rng) {
+        // I think this should be "random enough" for the sake of generating random property names.
+        let rand = rng().toString() + rng().toString();
+        cyrb128(rand);
+        return hashBuffer.toString('base64');
+    }
+
+    /**
+     * Creates an object with numerous randomly named properties with random values.
+     * The number of properties is set by {@link numProperties}.
+     * @returns A large object.
+     */
+    function makeObject() {
+        let obj = {};
+
+        for (let i = 0; i < numProperties; i++) {
+            Object.defineProperty(obj, makeRandomString(rng), {
+                enumerable: true,
+                value: rng(),
+                writable: true
+            });
+        }
+
+        return obj;
+    }
+
+    /**
+     * Creates a chain of large objects, created using {@link makeObject}.
+     * 
+     * The length of the prototype chain is set by {@link numObjectsInChain}.
+     * @returns A large object with large predecessors.
+     */
+    function makeLargeChain() {
+        let obj = makeObject();
+
+        for (let i = 1; i < numObjectsInChain; i++) {
+            let newObj = makeObject();
+            Object.setPrototypeOf(newObj, obj);
+            obj = newObj;
+        }
+
+        return obj;
+    }
+
+    console.log("=== Starting performance tests ===");
+    console.log("Creating large chain of objects (this takes some time)");
+    console.log(`> # of objects in chain: ${numObjectsInChain}\n> # of properties in object: ${numProperties}`);
+
+    let start = process.hrtime();
+    let largeObj = makeLargeChain();
+    elapsedTime(start, "Make large chain");
+
+    let results = [];
+    let iterateImplementations = [
+        Impls.iterateProperties_iterative_objectMethods,
+        Impls.iterateProperties_iterative_functional,
+        Impls.iterateProperties_iterative_reflectOnInput,
+        Impls.iterateProperties_iterative_fetchDescriptors,
+        Impls.iterateProperties_recursive_reflectOnInput,
+        Impls.iterateProperties_recursive_functional,
+        Impls.iterateProperties_recursive_fetchDescriptors
+    ];
+
+    // Measure speed of implementations
+    for (let iteratePropertiesImpl of iterateImplementations) {
+        let start = process.hrtime();
+        let res = Array.from(iteratePropertiesImpl(largeObj));
+        elapsedTime(start, iteratePropertiesImpl.name);
+
+        results.push(res);
+    }
+
+    // Check if results are the same
+    // To make it simple, let's not care about the actual difference too much
+
+    console.log("Sorting result arrays");
+
+    let len = 0;
+    for (let result of results) {
+        result.sort();
+        len = result.length;
+    }
+
+    console.log("Comparing result arrays");
+
+    let ok = true;
+    outside:
+    for (let i = 0; i < len; i++) {
+        let val = null;
+        for (let result of results) {
+            if (val === null) {
+                val = result[i];
+            }
+            else if (val !== result[i]) {
+                ok = false;
+                break outside;
+            }
+        }
+    }
+    console.log(ok ? "+++ Results match +++" : "--- Results don't match ---");
+
+    console.log("=== Performance tests finished ===");
+}
+
+performanceTests();

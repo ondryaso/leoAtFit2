@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Home</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Home</h1>
+
+    
+
+
+
+    
+
+
+    <h3> </h3>
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+    <section>
+        <article><h2>WAP project 1: Iterate Properties</h2>
+<p>This project provides an <code>iterate</code> library that provides a function generating names
+of properties in a given object and its prototype chain. The yielded property names
+may be optionally limited based on their property descriptors.</p>
+<h3>Usage</h3>
+<p>The <code>iterate</code> module exports a single function: <code>iterateProperties</code>. It takes two
+parameters: the target object and, optionally, the filtering object with the shape
+of a property descriptor.</p>
+<p>If a filter is supplied, its <code>configurable</code>, <code>enumerable</code>, <code>value</code> and <code>writable</code>
+properties are matched with the values in the target object's properties' descriptors.</p>
+<h3>Implementation notes</h3>
+<p>The specification doesn't say how properties identified by Symbols should be returned.
+As it asks for <em>property names</em>, this implementation calls <code>toString()</code> on these
+keys, thus it always returns strings and symbols are returned as <code>&quot;Symbol(id)&quot;</code>.</p>
+<p>The order in which the properties are returned is <strong>not specified</strong> by the assignment.
+In this implementation, they are yielded in order they appear in the result of <code>Reflect.ownKeys</code>.
+First, properties found in the provided source object are returned, then properties
+from its prototype, etc.</p>
+<h3>Tests</h3>
+<p>Several unit tests for the library are included. The tests use <a href="https://jasmine.github.io/index.html">jasmine</a>
+framework. They may be run separately using <code>npm test</code> or together with the performance
+tests (see below) using <code>test.sh</code>. The tests' code includes custom matchers to work with
+iterables.</p>
+<h3>Performance</h3>
+<p>Out of curiosity, I tried several approaches to the problem. First, the algorithm can
+be implemented either using recursion, or using a while cycle. Second, an object's
+properties can be retrieved using <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Enumerability_and_ownership_of_properties#querying_object_properties">various functions</a>.
+Third, the generator may either return values one-by-one using <code>yield</code> or accumulate
+the results in an array and return them all using <code>yield*</code>. Fourth, <em>functional-like</em>
+approach may be used to filter <code>(string | Symbol)[]</code> array and map it to an array
+of strings, or it can be done <em>imperatively</em> while iterating.</p>
+<p>The <code>iterate_alternative</code> module contains different implementations.</p>
+<p>The table below shows their running times of a single run on i7-1165G7, node.js v16.13.1
+when running for a chain of 1,000 objects with 10,000 properties each, with no filters
+used. The results show that, unsurprisingly, the recursive implementations run several
+orders of magnitude slower than their iterative counterparts. The actual method of listing
+an object's properties doesn't change the result significantly, except for the one that
+uses <code>Object.getOwnPropertyDescriptors</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Implementation</th>
+<th>Used methods</th>
+<th>Time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>recursive_fetchDescriptors</td>
+<td>Object.getOwnPropertyDescriptors,<br>Reflect.ownKeys</td>
+<td>150 s</td>
+</tr>
+<tr>
+<td>recursive_functional</td>
+<td>Object.getOwnPropertyDescriptor,<br>Object.getPrototypeOf</td>
+<td>138 s</td>
+</tr>
+<tr>
+<td>recursive_reflectOnInput</td>
+<td>Object.getOwnPropertyDescriptor,<br>Object.getPrototypeOf</td>
+<td>135 s</td>
+</tr>
+<tr>
+<td>iterative_fetchDescriptors</td>
+<td>Object.getOwnPropertyDescriptors,<br>Reflect.ownKeys</td>
+<td>10 s</td>
+</tr>
+<tr>
+<td>iterative_functional</td>
+<td>Object.getOwnPropertyDescriptor,<br>Object.getPrototypeOf</td>
+<td>2.3 s</td>
+</tr>
+<tr>
+<td>iterative_reflectOnInput</td>
+<td>Object.getOwnPropertyDescriptor,<br>Object.getPrototypeOf</td>
+<td>2.3 s</td>
+</tr>
+<tr>
+<td>iterative_objectMethods</td>
+<td>Object.getOwnPropertyNames,<br>Object.getOwnPropertySymbols,<br>Object.getPrototypeOf</td>
+<td>2.4 s</td>
+</tr>
+</tbody>
+</table></article>
+    </section>
+
+
+
+
+
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>performance_tests.js</h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description"><p>Tests various implementations of the <a href="module-iterate.html#.iterateProperties"><code>module:iterate.iterateProperties</code></a>
+generator and measures their running time.</p></div>
+        
+
+        
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-author">Author:</dt>
+    <dd class="tag-author">
+        <ul>
+            <li>Ondřej Ondryáš &lt;xondry02@stud.fit.vut.cz></li>
+        </ul>
+    </dd>
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="performance_tests.js.html">performance_tests.js</a>, <a href="performance_tests.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="module-iterate.html"><code>module:iterate</code></a> The baseline implementation.</li>
+        
+            <li><a href="module-iterate_alternative.html"><code>module:iterate_alternative</code></a> The alternative implementations.</li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>spec/iterateSpec.js</h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description"><p>Provides <code>jasmine</code> tests for <a href="module-iterate.html"><code>module:iterate</code></a>.</p></div>
+        
+
+        
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-author">Author:</dt>
+    <dd class="tag-author">
+        <ul>
+            <li>Ondřej Ondryáš &lt;xondry02@stud.fit.vut.cz></li>
+        </ul>
+    </dd>
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="spec_iterateSpec.js.html">spec/iterateSpec.js</a>, <a href="spec_iterateSpec.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-iterate.html">iterate</a></li><li><a href="module-iterate_alternative.html">iterate_alternative</a></li></ul><h3>Namespaces</h3><ul><li><a href="performanceTests.html">performanceTests</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Wed Mar 01 2023 21:55:29 GMT+0100 (Středoevropský standardní čas)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
