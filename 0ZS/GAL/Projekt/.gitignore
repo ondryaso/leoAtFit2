@@ -1,0 +1,7 @@
+build/*
+!build/empty.txt
+OGDF/build/*
+!OGDF/build/empty.txt
+cmake-build-debug/
+.idea/
+out/*
