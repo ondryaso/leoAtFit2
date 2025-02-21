@@ -1,0 +1,87 @@
+Architektury výpočetních systémů (AVS 2022)
+Projekt č. 2 (PMC)
+Login: xondry02
+
+==========
+Po individuální domluvě e-mailem z 12. 12. mám z důvodu organizace DOD povoleno
+projekt odevzdat až do 21. 12. 12:00. Tuto verzi odevzdanou v IS VUT tedy prosím
+nepovažujte za finální. Děkuji.
+==========
+
+
+
+
+Úloha 1: Paralelizace původního řešení
+===============================================================================
+
+1) Kterou ze smyček (viz zadání) je vhodnější paralelizovat a co způsobuje 
+   neefektivitu paralelizaci té druhé?
+
+   Vhodnější je paralelizovat „vnější“ smyčku v metodě `marchCubes`. Obecně se
+   snažíme využít TLP na úrovni vnějších smyček – tak, aby byla paralelně pro-
+   váděna co největší část výpočtu. Parelelizace „vnitřní“ smyčky v metodě
+   `evaluateFieldAt` je nevyhovující, protože pak většina programu/výpočtu běží
+   pouze na jednom jádře a vlákna vznikají pouze pro triviální výpočet. Protože
+   je `evaluateFieldAt` volána několikrát pro každou iteraci, neustále vznikají
+   a zanikají vlákna a dochází k jejich synchronizacím na bariéře – program tak
+   stráví režií vláken mnohem víc času než samotným výpočtem.
+
+
+2) Jaké plánování (rozdělení práce mezi vlákna) jste zvolili a proč? 
+   Jaký vliv má velikost "chunk" při dynamickém plánování (8, 16, 32, 64)?
+
+   Mezi jednotlivými možnostmi jsem nebyl schopen zaznamenat významnější rozdíl
+   – ačkoliv vlákna neběží stejnou dobu, předpokládám, že jejich běh se neliší
+   příliš dramaticky, tak, aby změna v plánování měla významný dopad na výkon.
+
+
+3) Jakým způsobem zajišťujete ukládání trojúhelníků z několika vláken současně?
+
+   Každé vlákno si naalokuje vlastní paměťový prostor, do kterého ukládá troj-
+   úhelníky, které spočte. Do výstupního pole jsou trojúhelníky uloženy až mimo
+   paralelní sekci. Zároveň jsem se zde pokusil využít vlastní OpenMP alokátor
+   s traitem omp_atv_nearest, který by měl vláknům přidělovat pamět, která leží
+   „fyzicky poblíž“ vláken, neb jsem očekával, že tak zlepším propustnost.
+
+
+Úloha 2: Paralelní průchod stromem
+===============================================================================
+
+1) Stručně popište použití OpenMP tasků ve vašem řešení.
+
+2) Jaký vliv má na vaše řešení tzv. "cut-off"? Je vhodné vytvářet nový 
+   task pro každou krychli na nejnižší úrovni?
+
+3) Jakým způsobem zajišťujete ukládání trojúhelníků z několika vláken současně?
+
+Úloha 3: Grafy škálování všech řešení
+===============================================================================
+
+1) Stručně zhodnoťte efektivitu vytvořených řešení (na základě grafů škálování).
+
+2) V jakém případě (v závislosti na počtu bodů ve vstupním souboru a velikosti 
+   mřížky) bude vaše řešení 1. úlohy neefektivní? (pokud takový případ existuje)
+
+3) Je (nebo není) stromový algoritmus efektivnější z pohledu slabého škálování 
+   vzhledem ke vstupu?
+
+4) Jaký je rozdíl mezi silným a slabým škálováním?
+
+Úloha 4: Analýza využití jader pomocí VTune
+================================================================================
+
+1) Jaké bylo průměrné využití jader pro všechny tři implementace s omezením na 
+   18 vláken? Na kolik procent byly využity?
+   
+   ref:
+   loop:
+   tree:
+
+2) Jaké bylo průměrné využití jader pro všechny tři implementace s využitím 
+   všech jader? Na kolik procent se podařilo využít obě CPU?
+   
+   ref:
+   loop:
+   tree:
+
+3) Jaké jsou závěry z těchto měření?

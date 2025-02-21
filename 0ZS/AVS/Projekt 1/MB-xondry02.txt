@@ -1,0 +1,68 @@
+#### Stručně odpovězte na následující otázky: ######
+
+1. Proč je nutné určovat, zda má výpočet pokračovat?
+==============================================================================
+Nutnost je relativní. Pokud by se při výpočtu neurčovalo, zda má ještě výpočet
+pokračovat, muselo by pro každý uvažovaný bod (respektive pro každou n-tici /
+vektor uvažovaných bodů) být zbytečně provedeno všech _i_ iterací (které zaru-
+čeně nezmění výsledek). Výsledek by byl stejný, ovšem za cenu zbytečně propá-
+leného výpočetního času.
+
+
+2. Byla "Line" vektorizace efektivní? Proč?
+==============================================================================
+Efektivita je také relativní... Vektorizace byla zjevně výrazně efektivnější
+než referenční „naivní“ přístup. Předpokládám, že poměrně významný vliv na vý-
+kon zde má už i jen prohození smyček, které odstraní datové závislosti mezi i-
+teracemi, což usnadňuje jejich provádění mimo pořadí. Druhým faktorem je samo-
+zřejmě vektorizace samotná.
+
+V porovnání s „batch“ variantou však tento přístup zaostává např. kvůli méně
+efektivní práci s pamětí. V každé iteraci se prochází celý řádek, což znamená
+načítání několika tisíců 32b položek z paměti. S hodnotou jedné takto načtené
+položky se přitom pracuje až v další iteraci – vzhledem k počtu položek je pak
+jasné, že nevydrží v cache dostatečně dlouho. Výpočet je tedy značně limitován
+propustností paměti.
+
+Čas výpočtu prodlužuje také nemožnost dostatečně jemně řídit ukončení iterace.
+Iteraci při takto prohozených smyčkách je možné spolehlivě ukončit až tehdy,
+když je u všech bodů v jednom řádku potvrzeno nalezení hodnoty překračující
+mez – do té doby se výpočty provádějí stále dokola pro všechny body řádku.
+
+
+3. Jaká byla dosažena výkonnost v Intel Advisoru pro jednotlivé implementace 
+(v GFLOPS)?
+==============================================================================
+Ref:    2,20 GFLOPS celkově;  2,279 self GFLOPS na nejvnitřnější smyčce
+                                                  se skalárním výpočtem
+Line:  31,20 GFLOPS celkově; 37,285 self GFLOPS na vektorizované smyčce
+Batch: 27,83 GFLOPS celkově; 66,696 self GFLOPS na vektorizované smyčce
+
+
+4. Jaká část kódu byla vektorizována v "Line" implementaci? Vyčteme tuto 
+informaci i u batch kalkulátoru?
+==============================================================================
+Vektorizována byla celá vnitřní smyčka nad jednotlivými body v jednom řádku
+pro jednu iteraci výpočtu (Advisor uvádí efficiency 42 %, gain 6,78x a self
+time 1,10 s z celkových 1,33 s).
+
+V „batch“ implementaci uvádí Advisor vektorizaci u smyčky provádějící iterace
+výpočtu, i když je simd pragma uvedena nad smyčkou iterující nad řádky jedno-
+tlivých bodů uvnitř jednoho bloku, překladač zde zjevně smyčky jistým způsobem
+spojil do jedné. Advisor uvádí efficiency 29 %, gain 4,62 x a self time 0,19 s
+z celkových 0,46 s.
+
+Pro obě smyčky překladač vytvořil (podle opt. reportu) také peel a remainder
+verzi, ty ale při výpočtu díky zarovnání a vhodným velikostem matice nebyly
+použity.
+
+
+5. Co vyčteme z Roofline modelu pro obě vektorizované implementace?
+==============================================================================
+„Line“ dosahuje při výpočtu o něco lepší aritmetické intenzity (0,734 FLOP/B),
+ale je výrazně omezena propustností paměti, nachází se jen těsně nad stropem
+pro L3 cache.
+„Batch“ oproti tomu ztrácí na aritmetické intenzitě (0,595 FLOP/B), využívá
+ale lépe paměť, téměř se dostává na propustnost L2 cache.
+Obě implementace jsou však oproti referenční implementaci výrazně víc „vpravo
+nahoře“, využívají tedy lépe jak výpočetní prostředky, tak paměť.

@@ -1,0 +1,7 @@
+resolver: ghc-9.2.5
+packages:
+- .
+
+extra-deps:
+- splitmix-0.1.0.4
+- random-1.2.1.1

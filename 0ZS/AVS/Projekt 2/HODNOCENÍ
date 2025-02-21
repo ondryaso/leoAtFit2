@@ -1,0 +1,69 @@
+Hodnoceni druheho projektu AVS: xondry02
+================================================================================
+## 1: paralelizace puvodniho reseni (5b)
++1.00 b: spravnost vertices a distance: 517224 == 517224 and 0.00 < 2.0 (max 1 b)
++1.00 b: cas 343 ms do limitu 1000 ms (a spravny vystup) (max 1 b)
+Detekovano SIMD: False
++1.00 b: Q1.1: kterou smycku paralelizovat (max 1 b)
++1.00 b: Q1.2: planovani (max 1 b)
++1.00 b: Q1.3: ukladani trojuhelniku (max 1 b)
+
+## 2: paralelni pruchod stromem (10b)
++2.00 b: spravnost vertices a distance: 517224 == 517224 and 0.00 < 2.0 (max 2 b)
++2.00 b: cas 129 ms do limitu 600 ms (a spravny vystup) (max 2 b)
++2.00 b: Q2.1: vyuziti tasku (max 2 b)
++1.00 b: Q2.2: sbirani trojuhelniku (max 1 b)
++2.00 b: Q2.3: vliv cut-off (max 2 b)
++1.00 b: Q2.4: ukladani trojuhelniku (max 1 b)
+Detekovano SIMD: False
+
+## 3: grafy skalovani, VTune (5b)
++1.00 b: Q3.1: efektivita skalovani (max 1 b)
++1.00 b: Q3.2: neefektivita prvni ulohy (max 1 b)
++1.00 b: Q3.3: tree efektivni pro slabe skalovani? (max 1 b)
++1.00 b: grafy (max 1 b)
++1.00 b: Q4 vtune (max 1 b)
+
+Celkem ziskano: 20.0 bodu
+
+Komentar
+================================================================================
+OK
+
+
+Log kompilace (stderr)
+================================================================================
+
+
+Log loop (stdout)
+================================================================================
+loop
+OpenMP Loop;{PWD}/Assignment/data/bun_zipper_res4.pts;r4_loop.obj;128;0.15;453;18;343;172408;22901094
+OpenMP Loop;{PWD}/Assignment/data/bun_zipper_res4.pts;r4_loop.obj;128;0.15;453;18;343;172408;22901094
+OpenMP Loop;{PWD}/Assignment/data/bun_zipper_res4.pts;r4_loop.obj;128;0.15;453;18;343;172408;22901094
+OpenMP Loop;{PWD}/Assignment/data/bun_zipper_res4.pts;r4_loop.obj;128;0.15;453;18;343;172408;22901094
+OpenMP Loop;{PWD}/Assignment/data/bun_zipper_res4.pts;r4_loop.obj;128;0.15;453;18;344;172408;22901094
+Reference mesh vertices count: 517224
+Test mesh vertices count: 517224
+Maximum distance between vertices: 0.0
+
+
+Log loop (stderr)
+================================================================================
+
+
+Log tree (stdout)
+================================================================================
+tree
+Octree;{PWD}/Assignment/data/bun_zipper_res4.pts;r4_tree.obj;128;0.15;453;18;129;172408;22901094
+Octree;{PWD}/Assignment/data/bun_zipper_res4.pts;r4_tree.obj;128;0.15;453;18;129;172408;22901094
+Octree;{PWD}/Assignment/data/bun_zipper_res4.pts;r4_tree.obj;128;0.15;453;18;128;172408;22901094
+Octree;{PWD}/Assignment/data/bun_zipper_res4.pts;r4_tree.obj;128;0.15;453;18;128;172408;22901094
+Octree;{PWD}/Assignment/data/bun_zipper_res4.pts;r4_tree.obj;128;0.15;453;18;129;172408;22901094
+Reference mesh vertices count: 517224
+Test mesh vertices count: 517224
+Maximum distance between vertices: 0.0
+
+
+Log tree (stderr)
+================================================================================

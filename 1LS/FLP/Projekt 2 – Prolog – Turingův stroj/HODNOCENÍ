@@ -1,0 +1,158 @@
+Dobry den,
+
+Toto je automaticky e-mail s vysledky hodnoceni vase projektu do FLP.
+
+==============================================================
+         HODNOCENI PROJEKTU pro xondry02 (turing)
+==============================================================
+ Funkcionalita (automatizovane testy) | 4.70 b
+                         Kvalita kodu | 1 b
+                          Dokumentace | 1 b
+                  Volitelna rozsireni | 2 b
+------------------------------------- | ----------------------
+ SECTENO A ZAOKROUHLENO        CELKEM | 8 b (z 8 max)
+                           Premiovych | 1 b (z 2 max)
+==============================================================
+
+HODNOCENI UCITELEM:
++------------------------------------------+
+| Teacher's comment on the quality of code |
++------------------------------------------+
+Jedna z nejlepsich implementaci, co jsem
+videl. Kod prehledny, elegantni, dobre
+komentovany - vcetne argumentu predikatu
+v souladu s Prologovskymi konvencemi.
+
+Chvalim vhodne pouziti dynamickych predikatu.
+ 
+[+] points: 1
+--------------------------------------------
++------------------------------------------+
+| Teacher's comment on the documentation   |
++------------------------------------------+
+Dokumentace obsahuje vse, co ma. Navic
+je skvele napsana a odzrojovana.
+Kvalitou zpracovani na urovni vedeckeho
+clanku.
+ 
+[+] points: 1
+--------------------------------------------
++------------------------------------------+
+| Teacher's comment on optional extensions |
++------------------------------------------+
+Davam dva body navic:
++1 za excelentni kod vcetne dokumentace
+   jednotlivych argumentu
++1 za vysoce kvalitni (a odzdrojovanou)
+   dokumentaci a testy
+ 
+[+] points: 2
+--------------------------------------------
+DOBRA PRACE! BLAHOPREJI K ZISKANI PREMIOVYCH BODU 🙂
+
+Detailni logy testovacich skriptu jsou k dispozici v priloze.
+
+S pozdravem
+Radek Hranicky
+
+
+
+----------------------------------------------------------
+ FLP: Automated project test suite by hranicky@fit.vut.cz
+ Login: xondry02
+ Assignment: turing
+ Evaluated on: Út kvě  2 10:54:33 CEST 2023
+----------------------------------------------------------
+swipl --goal=start -o flp22-log -c turing.pl
+% turing.pl compiled 0.00 sec, 35 clauses
+% autoloading prolog_codewalk:must_be/2 from /usr/local/lib/swipl-6.6.1/library/error
+% autoloading qsave:current_foreign_library/2 from /usr/local/lib/swipl-6.6.1/library/shlib
+% autoloading prolog_debug:backtrace/1 from /usr/local/lib/swipl-6.6.1/library/prolog_stack
+% autoloading oset:reverse/2 from /usr/local/lib/swipl-6.6.1/library/lists
+% autoloading prolog_codewalk:portray_clause/1 from /usr/local/lib/swipl-6.6.1/library/listing
+% autoloading prolog_codewalk:clause_info/4 from /usr/local/lib/swipl-6.6.1/library/prolog_clause
+% autoloading prolog_codewalk:initialization_layout/4 from /usr/local/lib/swipl-6.6.1/library/prolog_clause
+% autoloading error:assertion/1 from /usr/local/lib/swipl-6.6.1/library/debug
+% autoloading record:member/2 from /usr/local/lib/swipl-6.6.1/library/lists
+% autoloading user:read_line_to_codes/2 from /usr/local/lib/swipl-6.6.1/library/readutil
+% autoloading user:reverse/2 from /usr/local/lib/swipl-6.6.1/library/lists
+% autoloading user:append/3 from /usr/local/lib/swipl-6.6.1/library/lists
+% autoloading prolog_codewalk:clause_name/2 from /usr/local/lib/swipl-6.6.1/library/prolog_clause
+% Autoloader: iteration 1 resolved 11 predicates and loaded 13 files in 0.056 seconds.  Restarting ...
+% Autoloader: loaded 11 files in 2 iterations in 0.080 seconds
+xondry02: compilation OK.
+------------------ Testing xondry02 ------------------
+xondry02 | 01-zadaniDet (0.4 pts): OK.
+xondry02 | 02-zadaniNEDet (0.3 pts): OK.
+xondry02 | 03-zadaniNEDet2 (0.3 pts): OK.
+xondry02 | 06-dvojiceMezer (0.4 pts): OK.
+xondry02 | 07-posunvpravo (0.5 pts): OK.
+ERROR: Prolog initialisation failed:
+ERROR: Out of local stack
+xondry02 | 08-generovaniMezer (0.5 pts): FAILED: Program ended with an error!
+ERROR: Prolog initialisation failed:
+ERROR: Out of local stack
+xondry02 | 09-pokusOZasekVlevo (0.4 pts): FAILED: Program ended with an error!
+ERROR: Prolog initialisation failed:
+ERROR: Out of local stack
+xondry02 | 10-pokusOCykleni (0.4 pts): FAILED: Program ended with an error!
+xondry02 | 11-zacykleniA - zacykleni. (0.2 pts): OK.
+xondry02 | 12-zacykleniB - zacykleni. (0.2 pts): OK.
+xondry02 | 13-nekonecneVpravo - zacykleni. (0.4 pts): OK.
+xondry02 | 14-presMezDopravaDoleva (0.5 pts): OK.
+xondry02 | 16-opusteniPasky - abnormalni zastaveni. (0.5 pts): OK.
+xondry02 | 17-zasekNemaReseni - abnormalni zastaveni. (0.5 pts): OK.
+xondry02 | 18-slozityStroj (0.5 pts): OK.
+------------------------------------------------------
+12 successful, 3 failed tests | TOTAL PTS: 4.70 of 6.00.
+-------------------- xondry02 Done -------------------
++------------------------------------------+
+| Teacher's comment on the quality of code |
++------------------------------------------+
+Jedna z nejlepsich implementaci, co jsem
+videl. Kod prehledny, elegantni, dobre
+komentovany - vcetne argumentu predikatu
+v souladu s Prologovskymi konvencemi.
+
+Chvalim vhodne pouziti dynamickych predikatu.
+ 
+[+] points: 1
+--------------------------------------------
+ 
++------------------------------------------+
+| Teacher's comment on the documentation   |
++------------------------------------------+
+Dokumentace obsahuje vse, co ma. Navic
+je skvele napsana a odzrojovana.
+Kvalitou zpracovani na urovni vedeckeho
+clanku.
+ 
+[+] points: 1
+--------------------------------------------
+ 
++------------------------------------------+
+| Teacher's comment on optional extensions |
++------------------------------------------+
+Davam dva body navic:
++1 za excelentni kod vcetne dokumentace
+   jednotlivych argumentu
++1 za vysoce kvalitni (a odzdrojovanou)
+   dokumentaci a testy
+ 
+[+] points: 2
+--------------------------------------------
+ 
+===========================================================
+              OVERALL EVALUATION for xondry02         
+===========================================================
+    Functionality (automated tests) | 4.70 pts
+                    Quality of code | 1 pts
+                      Documentation | 1 pts
+                Optional extensions | 2 pts
+----------------------------------- | ---------------------
+                              TOTAL | 8 pts (of 8 max)
+                            Premium | 0.70 pts (of 2 max)
+===========================================================
+ FINAL (ROUNDED) RESULTS:     TOTAL | 8 pts (of 8 max)
+                            Premium | 1 pts (of 2 max)
+===========================================================

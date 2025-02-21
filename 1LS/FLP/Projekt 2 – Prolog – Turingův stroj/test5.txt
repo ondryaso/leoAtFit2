@@ -1,0 +1,7 @@
+S   Q1 R
+S a Q2 R
+Q1 a Q2 R
+Q2 a Q2 b
+Q2 b Q1 R
+Q1   F  
+aaaaaa

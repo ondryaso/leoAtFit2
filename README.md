@@ -6,15 +6,21 @@ V tomto repozitáři udržuji všechna zveřejnitelná řešení projektů, úko
 
 ## Obsah
 ### Zimní semestr
-- **AVS**: _[TODO]_ projekty (vektorizace, paralelizace)
+- **AVS**: projekty (vektorizace, paralelizace)
+- **BIS**: projekt (CTF – dokumentace)
+- **BMS**: projekt (low-density parity-check code)
 - **GAL**: projekt (porovnání: maximální nezávislá množina)
 - **MSP**: projekt (testy, regrese)
-- **PDI**: _[TODO]_ projekt (IoT: meteostanice), cvičení MapReduce
+- **PDI**: cvičení MapReduce
+- **SCO**: projekt (Bug Bounty)
+- **SUI**: projekty (prohledávání, základy ML, základy NN)
 - **TIN**: domácí úlohy
-- **UPA**: projekty (ukládání dat v NoSQL databázích – mongodb, příprava dat, extrakce dat z webu)
+- **UPA**: projekty (ukládání dat v NoSQL databázích – MongoDB, příprava dat, extrakce dat z webu)
+- **ZZN**: projekt (dolování znalostí v RapidMineru – data, dokumentace)
 
 
-### Letní semestr _[TODO]_
+### Letní semestr
+- **BZA**: projekt (studie – TPM)
 - **FLP**: projekty (Haskell: eliptické křivky, Prolog: Turingův stroj)
 - **KRY**: projekty (afinní šifry, hybridní šifrování)
 - **PDS**: projekt (analýza provozu v torrentových sítích)

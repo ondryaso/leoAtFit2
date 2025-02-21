@@ -1,0 +1,6 @@
+S   S1 R
+S a S1 b
+S1 a S1 b
+S1 b S1 R
+S1   F  
+aaaa

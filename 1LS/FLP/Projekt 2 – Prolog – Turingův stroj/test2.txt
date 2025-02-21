@@ -1,0 +1,14 @@
+S   S1  
+S a S1 x
+S1 a S1 R
+S1 b S1 R
+S1 x S1 R
+S1   S2 b
+S2 a S2 L
+S2 b S2 L
+S2 x S R
+S b S3 L
+S3 a S3 L
+S3 x S3 a
+S3   F  
+aaa

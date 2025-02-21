@@ -1,0 +1,13 @@
+Čitelná implementace
+Dobře řešené testy
+Úspěšný test ověření správné chování knihovny na dodaných testovacích datech
+Úspěšný test ověření správné chování knihovny na dodaných testovacích datech, testovací skript však byl dále rozšířen nad rámec toho zveřejněného
+Úspěšný test správnosti chování knihovny s využitím popisovačů vlastností testujících konfigurovatelnost vlastností
+Neúspěšný test ověřující chování knihovny ve spojení s popisovačem vlastností obsahující getter a setter
+Úspěšný test správného filtrování vlastností hodnotami, které jsou funkce
+Úspěšný test schopnosti knihovny najít více vlastností odpovídajících předaným popisovačům vlastností
+Úspěšný test správného chování knihovny v řetězci prototypů délky deset
+Úspěšný test ověřujícího, že knihovna nebude filtrovat na základě návratové hodnoty funkcí
+Úspěšný test ověřujícího správnou implementaci filtrování dat, které nesou speciální hodnoty (např. 0, pravdivostní hodnoty, null, undefined)
+Úspěšný test prověření práce programu s dlouhým řetězcem prototypů, vyhledávání v něm a ověření kvality implementace z pohledu rychlosti
+Excelentní rychlost implementace 
