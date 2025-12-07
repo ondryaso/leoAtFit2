@@ -39,7 +39,7 @@ unsigned LoopMeshBuilder::marchCubes(const ParametricScalarField &field) {
                                                             allocator);
 
         // Loop over each coordinate in the 3D grid.
-#pragma omp for reduction(+:totalTriangles) collapse(3) schedule(nonmonotonic:dynamic,32)//nonmonotonic:dynamic,32)
+#pragma omp for reduction(+:totalTriangles) collapse(3) schedule(nonmonotonic:dynamic,32)
         for (size_t x = 0u; x < gridSize; x++) {
             for (size_t y = 0u; y < gridSize; y++) {
                 for (size_t z = 0u; z < gridSize; z++) {

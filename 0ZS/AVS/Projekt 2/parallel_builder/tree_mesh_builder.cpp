@@ -110,16 +110,25 @@ inline void TreeMeshBuilder::doBlock(unsigned *totalTriangles, const unsigned ed
 unsigned TreeMeshBuilder::octreeTraverse(unsigned currentEdgeLen,
                                          const Vec3_t<float> &block, const ParametricScalarField &field) {
     if (currentEdgeLen <= EDGE_LEN_CUTOFF) {
-        // "Serial" execution after cutoff
         unsigned totalTriangles = 0;
 
-        for (unsigned x = 0u; x < currentEdgeLen; x++) {
-            for (unsigned y = 0u; y < currentEdgeLen; y++) {
-                for (unsigned z = 0u; z < currentEdgeLen; z++) {
-                    const Vec3_t<float> cubeOffset(block.x * currentEdgeLen + x,
-                                                   block.y * currentEdgeLen + y,
-                                                   block.z * currentEdgeLen + z);
-                    totalTriangles += buildCube(cubeOffset, field);
+        // I suppose the compiler might optimize the cycle out on its own
+        // but I'm not in the mood to test it, so I'm keeping this here (as
+        // a hint to the sacred compiler)
+        if (EDGE_LEN_CUTOFF == 1) {
+            totalTriangles = buildCube(block, field);
+        } else {
+            // "Serial" execution after cutoff
+            // This could also be made into tasks but I think the overhead would actually
+            // decrease performance
+            for (unsigned x = 0u; x < currentEdgeLen; x++) {
+                for (unsigned y = 0u; y < currentEdgeLen; y++) {
+                    for (unsigned z = 0u; z < currentEdgeLen; z++) {
+                        const Vec3_t<float> cubeOffset(block.x + x,
+                                                       block.y + y,
+                                                       block.z + z);
+                        totalTriangles += buildCube(cubeOffset, field);
+                    }
                 }
             }
         }
@@ -134,9 +143,8 @@ unsigned TreeMeshBuilder::octreeTraverse(unsigned currentEdgeLen,
     const unsigned divisionEdgeLen = currentEdgeLen >> 1;
     unsigned totalTriangles = 0;
 
-    // TODO: test if doing this has any performance advantage compared to iterating
-    // through sc_vertexNormPos. I think (and hope) it doesn't but one never knows
-    // when it comes to memory accesses.
+    // This isn't very nice but it seems to work SLIGHTLY faster compared to iterating
+    // through sc_vertexNormPos.
     doBlock(&totalTriangles, divisionEdgeLen, block, field, 0, 0, 0);
     doBlock(&totalTriangles, divisionEdgeLen, block, field, 0, 0, 1);
     doBlock(&totalTriangles, divisionEdgeLen, block, field, 0, 1, 0);

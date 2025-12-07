@@ -2,15 +2,6 @@ Architektury výpočetních systémů (AVS 2022)
 Projekt č. 2 (PMC)
 Login: xondry02
 
-==========
-Po individuální domluvě e-mailem z 12. 12. mám z důvodu organizace DOD povoleno
-projekt odevzdat až do 21. 12. 12:00. Tuto verzi odevzdanou v IS VUT tedy prosím
-nepovažujte za finální. Děkuji.
-==========
-
-
-
-
 Úloha 1: Paralelizace původního řešení
 ===============================================================================
 
@@ -34,6 +25,10 @@ nepovažujte za finální. Děkuji.
    – ačkoliv vlákna neběží stejnou dobu, předpokládám, že jejich běh se neliší
    příliš dramaticky, tak, aby změna v plánování měla významný dopad na výkon.
 
+   S nastavením `nonmonotonic:dynamic,32` každopádně VTune na 18 jádrech hlásí
+   nulový potenciální zisk v případě ideálního rozložení práce (OpenMP Potential
+   Gain).
+
 
 3) Jakým způsobem zajišťujete ukládání trojúhelníků z několika vláken současně?
 
@@ -49,23 +44,79 @@ nepovažujte za finální. Děkuji.
 
 1) Stručně popište použití OpenMP tasků ve vašem řešení.
 
+   Jádrem implementace je metoda `octreeTraverse`, jejímž parametrem je délka
+   hrany. Metoda délku hrany podělí dvěma a vytvoří osm tasků pro osm vzniklých
+   „podkostek“. V každém z nich je znovu zavolána metoda `octreeTraverse` pro
+   jednotlivé podkostky. Po dosažení „cut-off“ hranice je pro jednotlivé body
+   uvnitř malých kostek volána metoda `buildCube`, výsledky jsou posčítány
+   a použity jako návratová hodnota `octreeTraverse`. Metoda sbírá výsledky
+   svých vnitřích volání, sčítá je (pomocí pragmy atomic update) a před vrácením
+   čeká na dokončení všech tasků, které vytvořila (pragma taskwait).
+
+
 2) Jaký vliv má na vaše řešení tzv. "cut-off"? Je vhodné vytvářet nový 
    task pro každou krychli na nejnižší úrovni?
 
+   Cut-off ovlivňuje počet vzniklých tasků – jejich počet roste exponenciálně
+   (každý task vytvoří osm nových tasků). Tasky sice zajišťují paralelizaci
+   zpracování, ale přináší také značnou režii. Omezením počtu tasků i o jednu
+   úroveň exponenciály tak může být ve finále dosaženo snížení času i při nižším
+   využití jader.
+
+   Měření však ukázalo, že na 18 jádrech ušetřená režie nevykompenzuje ztrátu
+   způsobenou nižším využitím jader a výsledky jsou zde nepatrně horší i pro
+   cut-off = 2. Ukazuje se tedy, že je vhodné vytvářet tasky i pro krychle na
+   nejnižší úrovni. Naopak na 36 jádrech je s cut-off = 2 celkový výkon srovnatelný
+   s cut-off = 1, při některých měřeních i nepatrně vyšší (předpokládám, že NUMA
+    charakter stroje zde zvyšuje také nároky režie tasků).
+
+
 3) Jakým způsobem zajišťujete ukládání trojúhelníků z několika vláken současně?
+
+   Využit je úplně stejný přístup jako ve variantě „loop“.
+
 
 Úloha 3: Grafy škálování všech řešení
 ===============================================================================
 
 1) Stručně zhodnoťte efektivitu vytvořených řešení (na základě grafů škálování).
 
+   V obou případech očekávaně klesá celkový čas se zvyšováním počtu jader, zlom
+   však nastavá při využití obou CPU, kdy se začnou projevovat režie spojené
+   s NUMA architekturou (a to především u „tree“ varianty).
+
+   „Tree“ algoritmus začíná být efektivnější než „loop“ zejména od jisté velikosti
+   mřížky (cca při 2^16 elementech), také mu svědčí vyšší počet jader (při přechodu
+   z jednoho na dvě se časy téměř nezlepší kvůli náhlému nárustu režie, přidávání
+   dalších jader však vylepšuje efektivitu i navzdory režii).
+
+
 2) V jakém případě (v závislosti na počtu bodů ve vstupním souboru a velikosti 
    mřížky) bude vaše řešení 1. úlohy neefektivní? (pokud takový případ existuje)
+
+   Neefektivita se projevují zejména při velké mřížce a malém počtu bodů na vstupu,
+   algoritmus pak zcela zbytečně provádí velké množství iterací.
+
 
 3) Je (nebo není) stromový algoritmus efektivnější z pohledu slabého škálování 
    vzhledem ke vstupu?
 
+   Slabé škálování má „tree“ algoritmus významně horší zejména při přechodu z jednoho
+   na dvě jádra. Při dalším přidávání jader však vykazují oba algoritmy pro rozumně velké
+   vstupy vcelku podobné chování. Celkově se asi dá říct, že „loop“ varianta má o něco
+   lepší slabé škálování.
+
+
 4) Jaký je rozdíl mezi silným a slabým škálováním?
+
+   Silné škálování ukazuje, jak se pro úlohu s konstantní velikostí snižuje
+   čas výpočtu se zvyšujícím se počtem jader. Ideální silné škálování vypadá tak,
+   že se na N procesorech čas výpočtu sníží N-krát.
+
+   Slabé škálování předpokládá, že se velikost úlohy zvyšuje v závislosti na
+   počtu jader, čili při ideálním slabém škálování je konstantní čas výpočtu
+   na jedno jádro.
+
 
 Úloha 4: Analýza využití jader pomocí VTune
 ================================================================================
@@ -73,15 +124,32 @@ nepovažujte za finální. Děkuji.
 1) Jaké bylo průměrné využití jader pro všechny tři implementace s omezením na 
    18 vláken? Na kolik procent byly využity?
    
-   ref:
-   loop:
-   tree:
+   ref:   0,997 ( 2,8 % z 36 jader ~  5,6 % z 18)
+   loop: 17,476 (48,5 % z 36 jader ~   97 % z 18)
+   tree: 16,851 (46,8 % z 36 jader ~ 93,6 % z 18)
+
 
 2) Jaké bylo průměrné využití jader pro všechny tři implementace s využitím 
    všech jader? Na kolik procent se podařilo využít obě CPU?
    
-   ref:
-   loop:
-   tree:
+   ref:   0,998 ( 2,8 % z 36 jader)
+   loop: 33,194 (92,2 % z 36 jader)
+   tree: 26,160 (72,7 % z 36 jader)
+
 
 3) Jaké jsou závěry z těchto měření?
+
+   Je zřejmé, že referenční implementace nijak nevyužívá dostupná jádra a jejich
+   výpočetní výkon, přidávání jader tedy nemá smysl.
+
+   Implementace využívající paralelizovaný cyklus využívá všechna dostupná jádra
+   velmi efektivně – paralelizována tedy byla dostatečně velká část programu, ite-
+   race jsou vhodně rozplánovány. Celkový čas běhu je však vyšší než v „tree“ va-
+   riantě, a to kvůli zbytečnému provádění výpočtů v prázdných místech vstupu.
+
+   „Tree“ varianta je, co se týče využití jader, při práci na jednom fyzickém CPU
+   srovnatelná s „loop“ variantou, a to za významného snížení celkového času. Při
+   využití obou CPU se bohužel projevuje zvýšená režie tasků a jejich synchronizace
+   (která zejména napříč fyzickými CPU může „bolet“), některá vlákna musejí čekat
+   déle než jiná, rozložení zátěže přestává být ideální. I tak je ale výpočet ry-
+   chlejší, a to díky inherentní efektivitě tohoto přístupu.
